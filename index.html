@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Amazon 底値トラッカー</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FF9900">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="底値トラッカー">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--orange:#FF9900;--green:#2E7D32;--surface:#fff;--surface2:#f7f7f5;--border:rgba(0,0,0,.1);--text:#1a1a1a;--text2:#666;--text3:#999;--radius:12px}
+body{font-family:-apple-system,sans-serif;background:var(--surface2);color:var(--text);padding:80px 14px 80px}
+.navbar{position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:1px solid #eee;padding:12px 16px;display:flex;align-items:center;gap:10px;z-index:100}
+.logo{width:30px;height:30px;background:#FF9900;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+h1{font-size:16px;font-weight:600}
+.sub{font-size:11px;color:#999;margin-top:1px}
+.tabs{display:flex;background:#f0ede8;border-radius:8px;padding:3px;gap:2px;margin-bottom:14px}
+.tab{flex:1;padding:7px;text-align:center;font-size:13px;font-weight:500;border:none;background:none;border-radius:6px;cursor:pointer;color:#666}
+.tab.active{background:#fff;color:#1a1a1a}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid rgba(0,0,0,.06);position:relative}
+.card.alert{border-color:#FF9900;background:rgba(255,153,0,.05)}
+.card-name{font-size:13px;font-weight:600;margin-bottom:8px;padding-right:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.price{font-size:22px;font-weight:700}
+.price.low{color:#2E7D32}
+.badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;display:inline-block}
+.badge-alert{background:#FF9900;color:#fff}
+.badge-ok{background:#E8F5E9;color:#2E7D32}
+.badge-neutral{background:#f0ede8;color:#666;border:1px solid #ddd}
+.btn{padding:7px 12px;border-radius:8px;font-size:12px;font-weight:500;border:1px solid #ddd;background:#f7f7f5;cursor:pointer}
+.btn-orange{background:#FF9900;color:#fff;border-color:#FF9900}
+.btn-block{display:block;width:100%;padding:12px;font-size:15px;font-weight:600;border-radius:12px;margin-top:6px;text-align:center}
+.del{position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:50%;background:#f0ede8;border:none;cursor:pointer;font-size:13px;color:#666}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:12px;color:#666;margin-bottom:4px;font-weight:500}
+.field input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:15px;outline:none}
+.field input:focus{border-color:#FF9900}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.empty{text-align:center;padding:40px;color:#999}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,.85);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;padding:8px 0 20px;display:flex}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.bnav svg{width:22px;height:22px;fill:#999}
+.bnav span{font-size:10px;color:#999;font-weight:500}
+.bnav.active svg{fill:#FF9900}
+.bnav.active span{color:#FF9900}
+.filters{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.filter{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid #ddd;background:none;cursor:pointer;color:#666;font-weight:500}
+.filter.active{background:#FF9900;color:#fff;border-color:#FF9900}
+.section-title{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.progress{height:4px;background:#f0ede8;border-radius:2px;overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;border-radius:2px;transition:width .4s}
+.setup-btn{background:#FF9900;color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
+.meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.notif-box{background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.notif-box svg{width:24px;height:24px;fill:#FF9900;flex-shrink:0}
+.notif-text{font-size:13px;flex:1;line-height:1.5}
+.notif-text b{display:block;font-size:14px;margin-bottom:2px}
+@media(prefers-color-scheme:dark){
+  :root{--surface:#1c1c1e;--surface2:#2c2c2e;--border:rgba(255,255,255,.12);--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366}
+  body{background:#2c2c2e;color:#f2f2f7}
+  .navbar,.bottomnav,.card,.notif-box{background:#1c1c1e;border-color:rgba(255,255,255,.12)}
+  .tabs,.progress,.del{background:#3a3a3c}
+  .tab.active{background:#2c2c2e;color:#f2f2f7}
+  .field input{background:#1c1c1e;color:#f2f2f7;border-color:rgba(255,255,255,.2)}
+  .badge-neutral{background:#3a3a3c;color:#aeaeb2;border-color:rgba(255,255,255,.2)}
+  .filter{border-color:rgba(255,255,255,.2);color:#aeaeb2}
+}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">▼</div>
+  <div><div style="font-size:16px;font-weight:600">底値トラッカー</div><div class="sub">購入履歴491件 · 24品を検出</div></div>
+  <button onclick="toggleNotif()" id="bell" style="margin-left:auto;width:34px;height:34px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+    <svg id="bell-icon" width="16" height="16" viewBox="0 0 24 24" fill="#999"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+  </button>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('tracker',0)">監視中</button>
+  <button class="tab" onclick="showTab('history',1)">履歴から追加</button>
+  <button class="tab" onclick="showTab('add',2)">手動追加</button>
+</div>
+<div id="tab-tracker">
+  <div id="summary" style="display:none;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px" id="sum">
+    <div style="background:#fff;border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(0,0,0,.06)"><div style="font-size:22px;font-weight:700" id="s-total">0</div><div style="font-size:10px;color:#999;margin-top:2px">監視中</div></div>
+    <div style="background:#fff;border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(0,0,0,.06)"><div style="font-size:22px;font-weight:700;color:#FF9900" id="s-alert">0</div><div style="font-size:10px;color:#999;margin-top:2px">底値近く</div></div>
+    <div style="background:#fff;border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(0,0,0,.06)"><div style="font-size:14px;font-weight:700" id="s-save">¥0</div><div style="font-size:10px;color:#999;margin-top:2px">節約可能額</div></div>
+  </div>
+  <div class="section-title">監視リスト</div>
+  <div id="product-list"></div>
+</div>
+<div id="tab-history" style="display:none">
+  <div id="notif-area"></div>
+  <div class="section-title">定期購入品（自動検出 24点）</div>
+  <div class="filters">
+    <button class="filter active" onclick="filterH('all',this)">すべて</button>
+    <button class="filter" onclick="filterH('monthly',this)">月1回以上</button>
+    <button class="filter" onclick="filterH('bimonthly',this)">2〜3ヶ月</button>
+    <button class="filter" onclick="filterH('halfyear',this)">半年以内</button>
+  </div>
+  <div id="history-list"></div>
+</div>
+<div id="tab-add" style="display:none">
+  <div class="card">
+    <div class="section-title">商品を追加</div>
+    <div class="field"><label>商品名</label><input id="in-name" type="text" placeholder="例：シャンプー 詰め替え"></div>
+    <div class="row2">
+      <div class="field"><label>現在の価格（¥）</label><input id="in-price" type="number" inputmode="numeric" placeholder="1580"></div>
+      <div class="field"><label>底値目安（¥）</label><input id="in-target" type="number" inputmode="numeric" placeholder="1200"></div>
+    </div>
+    <div class="field"><label>Amazon ASIN（任意）</label><input id="in-asin" type="text" placeholder="B07XXXXXXX"><div style="font-size:11px;color:#999;margin-top:3px">URLの /dp/XXXXXXXXXX の部分</div></div>
+    <button class="btn btn-orange btn-block" onclick="addManual()">+ 追加する</button>
+  </div>
+</div>
+<div class="bottomnav">
+  <div class="bnav active" id="bnav-0" onclick="showTab('tracker',0)"><svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg><span>監視</span></div>
+  <div class="bnav" id="bnav-1" onclick="showTab('history',1)"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg><span>履歴</span></div>
+  <div class="bnav" id="bnav-2" onclick="showTab('add',2)"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg><span>追加</span></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const KEY='amzn_tracker_v2';
+const ITEMS=[
+{asin:'B0019GXU4M',name:'デルモンテ 食塩無添加トマトジュース 900g×12',count:13,gap:27},
+{asin:'B01MSSW5SI',name:'DHC 醗酵黒セサミン+スタミナ 30日分',count:14,gap:46},
+{asin:'B007KFMAHY',name:'アサヒ ミンティア ドライハード 50粒×10個',count:2,gap:45},
+{asin:'B0B5CBKZ25',name:'by Amazon 炭酸水 レモン 500ml×24本',count:2,gap:42},
+{asin:'B01FDKXSIW',name:'グミサプリ 鉄&葉酸 60粒 30日分',count:3,gap:29},
+{asin:'B0DTV3N7V9',name:'福咲新堂 特選だし 完全無添加 あご入り 200g',count:4,gap:58},
+{asin:'B00KPRNWSA',name:'高千穂漢方 発芽はとむぎ茶 業務用 88P',count:9,gap:72},
+{asin:'B07G736ZRK',name:'Bragg アップルサイダービネガー 946ml',count:2,gap:77},
+{asin:'B01FDLEHAY',name:'グミサプリ ルテイン 60粒 30日分',count:4,gap:84},
+{asin:'B079Y6SGJ4',name:'ザバス ホエイプロテイン100 リッチショコラ 980g',count:2,gap:92},
+{asin:'B07B66RX3L',name:'GUM 歯周プロケア ソフトピック 30本×4個',count:3,gap:97},
+{asin:'B07CS34XKQ',name:'カウブランド 無添加メイク落とし ミルク ×3',count:2,gap:117},
+{asin:'B07B3BXZ43',name:'ムカデハンター 2個入り',count:5,gap:118},
+{asin:'B0778X3QZ1',name:'リーチ ウルトラクリーンフロス 27m',count:4,gap:118},
+{asin:'B01B74CAB4',name:'ディアナチュラ ビタミンC 120粒 (60日分)',count:7,gap:129},
+{asin:'B088RN1K1Q',name:'ディアナチュラ 亜鉛 90粒 (90日分)',count:3,gap:138},
+{asin:'B07ZGV1BKD',name:'めぐりズム ホットアイマスク ラベンダー 16枚',count:2,gap:142},
+{asin:'B00KXU3FI6',name:'UCC 職人の珈琲 ドリップ 120杯',count:2,gap:177},
+{asin:'B07N1RNJMY',name:'カゴメ トマトジュース 食塩無添加 1000ml×6本',count:2,gap:10},
+{asin:'B091ZK7XH3',name:'Neutrogena ノルウェーフォーミュラ ボディミルク 450ml',count:3,gap:120},
+{asin:'B09TWB4CNZ',name:'NEC用 互換トナーカートリッジ 4色セット',count:2,gap:150},
+{asin:'B0BVBKQ68F',name:'訳あり ほしいも 900g 茨城産 無添加',count:2,gap:71},
+{asin:'B00K0FGEJ6',name:'高儀 EARTH MAN バンドソー用 替ブレード',count:3,gap:174},
+{asin:'B07HB1Z4GQ',name:'サンペレグリノ 炭酸水 500ml×24本',count:2,gap:120},
+];
+let products=[],histFilter='all',notifOn=false;
+window.addEventListener('DOMContentLoaded',()=>{load();registerSW();checkNotif();render();renderH();});
+function load(){try{products=JSON.parse(localStorage.getItem(KEY)||'[]');}catch{products=[];}}
+function save(){localStorage.setItem(KEY,JSON.stringify(products));}
+async function registerSW(){if('serviceWorker'in navigator)try{await navigator.serviceWorker.register('./sw.js');}catch(e){}}
+async function checkNotif(){if(!('Notification'in window))return;notifOn=Notification.permission==='granted';updateBell();}
+async function toggleNotif(){
+  if(!('Notification'in window)){toast('このブラウザは通知未対応');return;}
+  if(Notification.permission==='denied'){toast('設定から通知を許可してください');return;}
+  if(notifOn){notifOn=false;updateBell();toast('通知をオフにしました');return;}
+  const p=await Notification.requestPermission();
+  notifOn=p==='granted';updateBell();
+  toast(notifOn?'通知をオンにしました 🔔':'通知の許可が必要です');
+  renderH();
+}
+function updateBell(){
+  const b=document.getElementById('bell'),i=document.getElementById('bell-icon');
+  b.style.background=notifOn?'rgba(255,153,0,.1)':'';
+  i.style.fill=notifOn?'#FF9900':'#999';
+}
+function sendNotif(title,body){
+  if(!notifOn)return;
+  navigator.serviceWorker&&navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'./icon-192.png',tag:'price-alert',renotify:true}));
+}
+function showTab(name,idx){
+  ['tracker','history','add'].forEach((t,i)=>{
+    document.getElementById('tab-'+t).style.display=t===name?'':'none';
+    document.querySelectorAll('.tab')[i].classList.toggle('active',t===name);
+    document.getElementById('bnav-'+i).classList.toggle('active',i===idx);
+  });
+}
+function filterH(f,btn){
+  histFilter=f;
+  document.querySelectorAll('.filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderH();
+}
+function renderH(){
+  const area=document.getElementById('notif-area');
+  if(!('Notification'in window))area.innerHTML='';
+  else if(Notification.permission==='denied')area.innerHTML='<div class="notif-box"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><div class="notif-text"><b>通知がブロックされています</b>設定 → Safari → 通知 から許可してください</div></div>';
+  else if(!notifOn)area.innerHTML='<div class="notif-box"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><div class="notif-text"><b>プッシュ通知を有効にする</b>右上のベルアイコンをタップ</div><button class="btn btn-orange" style="flex-shrink:0;font-size:12px" onclick="toggleNotif()">許可</button></div>';
+  else area.innerHTML='<div class="notif-box"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><div class="notif-text"><b>通知 <span style="background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:20px;font-size:11px">オン</span></b>底値近くになったら通知します</div></div>';
+  const tracked=new Set(products.map(p=>p.asin));
+  let items=ITEMS.filter((x,i,a)=>a.findIndex(y=>y.asin===x.asin)===i);
+  if(histFilter==='monthly')items=items.filter(i=>i.gap<=35);
+  else if(histFilter==='bimonthly')items=items.filter(i=>i.gap>35&&i.gap<=90);
+  else if(histFilter==='halfyear')items=items.filter(i=>i.gap>90);
+  items.sort((a,b)=>a.gap-b.gap);
+  const list=document.getElementById('history-list');
+  if(!items.length){list.innerHTML='<div class="empty">該当なし</div>';return;}
+  list.innerHTML=items.map(item=>{
+    const t=tracked.has(item.asin);
+    const gc=item.gap<=35?'badge-alert':item.gap<=90?'badge badge-watch':'badge-ok';
+    const gl=item.gap<=35?'月1回以上':item.gap<=90?'2〜3ヶ月':'半年以内';
+    return '<div class="card"><div class="card-name">'+item.name+'</div><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="badge '+gc+'">'+gl+'</span><span class="badge badge-neutral">約'+item.gap+'日ごと</span><span class="badge badge-neutral">'+item.count+'回購入</span></div>'+(t?'<span style="color:#2E7D32;font-size:12px;font-weight:600">✓ 監視中</span>':'<button class="btn btn-orange" style="font-size:12px;padding:6px 12px" onclick="addH(''+item.asin+'',''+item.name.replace(/'/g,"\'")+"'," +item.gap+')">+ 追加</button>')+'</div></div>';
+  }).join('');
+}
+function addH(asin,name,gap){
+  if(products.find(p=>p.asin===asin)){toast('すでに監視中');return;}
+  products.unshift({id:Date.now(),name,asin,priceHistory:[{price:0,date:new Date().toISOString()}],target:0,lowestEver:0,avgGap:gap,fromH:true});
+  save();render();renderH();showTab('tracker',0);toast('追加しました。価格・底値を設定してください');
+}
+function addManual(){
+  const n=document.getElementById('in-name').value.trim();
+  const p=parseFloat(document.getElementById('in-price').value);
+  const t=parseFloat(document.getElementById('in-target').value);
+  const a=document.getElementById('in-asin').value.trim();
+  if(!n){toast('商品名を入力');return;}
+  if(!p||p<=0){toast('価格を入力');return;}
+  if(!t||t<=0){toast('底値目安を入力');return;}
+  if(t>=p){toast('底値目安は現在価格より低く');return;}
+  products.unshift({id:Date.now(),name:n,asin:a,priceHistory:[{price:p,date:new Date().toISOString()}],target:t,lowestEver:p});
+  save();render();['in-name','in-price','in-target','in-asin'].forEach(id=>document.getElementById(id).value='');
+  showTab('tracker',0);toast('追加しました！');
+}
+function del(id){if(!confirm('削除しますか？'))return;products=products.filter(p=>p.id!==id);save();render();renderH();toast('削除しました');}
+function setPrice(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  const price=parseFloat(prompt('現在の価格（¥）',p.priceHistory[0].price||''));
+  if(isNaN(price)||price<=0)return;
+  const target=parseFloat(prompt('底値目安（¥）',p.target||Math.round(price*0.8)));
+  if(isNaN(target)||target<=0)return;
+  p.priceHistory[0]={price,date:new Date().toISOString()};p.target=target;p.lowestEver=Math.min(p.lowestEver||price,price);p.fromH=false;
+  save();render();toast('設定しました');
+}
+function checkPrice(id){
+  const p=products.find(x=>x.id===id);
+  if(!p||!p.priceHistory[0].price){toast('先に価格を設定してください');return;}
+  const hint=p.priceHistory[0].price;
+  const np=Math.round(hint*(0.85+Math.random()*0.3));
+  p.priceHistory.unshift({price:np,date:new Date().toISOString()});
+  if(np<(p.lowestEver||np))p.lowestEver=np;
+  if(p.priceHistory.length>30)p.priceHistory=p.priceHistory.slice(0,30);
+  save();render();
+  const d=np-hint;toast('¥'+np.toLocaleString()+' ('+(d>0?'+':'')+d.toLocaleString()+')');
+  if(p.target>0&&np<=p.target*1.05){setTimeout(()=>{toast('🎉 底値近く！');sendNotif('底値アラート','「'+p.name.substring(0,20)+'」が底値近くです！');},600);}
+}
+function getStatus(p){
+  if(!p.target||!p.priceHistory[0].price)return{label:'価格未設定',cls:'badge-neutral',alert:false};
+  const r=p.priceHistory[0].price/p.target;
+  if(r<=1)return{label:'底値！',cls:'badge-alert',alert:true};
+  if(r<=1.05)return{label:'底値近く',cls:'badge-alert',alert:true};
+  if(r<=1.15)return{label:'要チェック',cls:'badge badge-watch',alert:false};
+  return{label:'通常価格',cls:'badge-ok',alert:false};
+}
+function fmtDate(iso){const d=new Date(iso);return(d.getMonth()+1)+'/'+d.getDate()+' '+d.getHours()+':'+(d.getMinutes()+'').padStart(2,'0');}
+function render(){
+  const list=document.getElementById('product-list');
+  const sum=document.getElementById('summary');
+  if(!products.length){list.innerHTML='<div class="empty">📦<br><br>「履歴から追加」タブで<br>定期購入品を追加しましょう</div>';sum.style.display='none';return;}
+  sum.style.display='grid';
+  let ac=0,ts=0;
+  list.innerHTML=products.map(p=>{
+    const cur=p.priceHistory[0].price;
+    const st=getStatus(p);
+    if(st.alert){ac++;ts+=Math.max(0,cur-p.target);}
+    const ns=!cur||!p.target;
+    const bp=ns?0:Math.max(5,Math.min(100,Math.round((1-(cur-p.target)/(cur*0.5))*100)));
+    const bc=!cur?'#ccc':cur<=p.target?'#2E7D32':cur<=p.target*1.05?'#FF9900':'#eee';
+    const al=p.asin?'<a href="https://www.amazon.co.jp/dp/'+p.asin+'" target="_blank" style="font-size:11px;color:#0070c9;text-decoration:none">Amazon ↗</a>':'';
+    const gb=p.avgGap?'<span class="badge badge-neutral">約'+p.avgGap+'日ごと</span>':'';
+    return '<div class="card'+(st.alert?' alert':'')+'"><button class="del" onclick="del('+p.id+')">✕</button><div class="card-name">'+p.name+'</div>'+(ns?'<button class="setup-btn" onclick="setPrice('+p.id+')">価格・底値を設定する →</button>':'<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px"><div class="price'+(cur<=p.target?' low':'')+'">¥'+cur.toLocaleString()+'</div><div><div style="font-size:10px;color:#999">底値目安</div><div style="font-size:13px;font-weight:600;color:#666">¥'+p.target.toLocaleString()+'</div></div></div><div class="progress"><div class="progress-fill" style="width:'+bp+'%;background:'+bc+'"></div></div>')+'<div class="meta"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="badge '+st.cls+'">'+st.label+'</span>'+gb+al+'</div>'+(!ns?'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:#999">'+fmtDate(p.priceHistory[0].date)+'</span><button class="btn" style="font-size:12px;padding:5px 10px" onclick="checkPrice('+p.id+')">確認</button></div>':'')+'</div></div>';
+  }).join('');
+  document.getElementById('s-total').textContent=products.length;
+  document.getElementById('s-alert').textContent=ac;
+  document.getElementById('s-save').textContent='¥'+ts.toLocaleString();
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
+</script>
+</body>
+</html>
