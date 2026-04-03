@@ -129,7 +129,7 @@ var KEY='amzn_v2';
 var DATA=[
   {asin:'B0019GXU4M',name:'デルモンテ 食塩無添加トマトジュース 900g×12',count:13,gap:27,minPrice:2598,avgPrice:3621,suggestTarget:3187},
   {asin:'B01MSSW5SI',name:'DHC 醗酵黒セサミン スタミナ 30日分',count:14,gap:46,minPrice:994,avgPrice:1224,suggestTarget:1077},
-  {asin:'B007KFMAHY',name:'アサヒ ミンティア ドライハード 50粒×10個',count:2,gap:45,minPrice:1920,avgPrice:1920,suggestTarget:1690},
+  {asin:'B007KFMAHY',name:'アサヒ ミンティア ドライハード 50粒×10個',count:2,gap:45,minPrice:1000,avgPrice:1000,suggestTarget:1000},
   {asin:'B0B5CBKZ25',name:'by Amazon 炭酸水 レモン 500ml×24本',count:2,gap:42,minPrice:1265,avgPrice:1265,suggestTarget:1113},
   {asin:'B01FDKXSIW',name:'グミサプリ 鉄 葉酸 60粒 30日分',count:3,gap:29,minPrice:1111,avgPrice:1110,suggestTarget:977},
   {asin:'B0DTV3N7V9',name:'福咲新堂 特選だし 完全無添加 あご入り 200g',count:4,gap:58,minPrice:1273,avgPrice:1495,suggestTarget:1316},
@@ -365,7 +365,7 @@ function render(){
     var p=prods[i];
     var cur=p.ph[0].price;
     var st=getStatus(p);
-    if(st.al){ac++;ts+=Math.max(0,cur-p.target);}
+    if(st.al){ac++;if(p.target>0&&cur>p.target){ts+=cur-p.target;}}
     var ns=!cur||!p.target;
     var bp=ns?0:Math.max(5,Math.min(100,Math.round((1-(cur-p.target)/(cur*0.5))*100)));
     var bc=!cur?'#ccc':cur<=p.target?'#2E7D32':cur<=p.target*1.05?'#FF9900':'#ddd';
