@@ -127,30 +127,30 @@ var KEY='amzn_v2';
 // 購入履歴481件から算出した実績価格データ
 // minPrice=過去最安値, avgPrice=平均購入価格, suggestTarget=推奨底値目安(平均の88%)
 var DATA=[
-  {asin:'B0019GXU4M',name:'デルモンテ 食塩無添加トマトジュース 900g×12',count:13,gap:27,minPrice:2598,avgPrice:3621,suggestTarget:3187},
-  {asin:'B01MSSW5SI',name:'DHC 醗酵黒セサミン スタミナ 30日分',count:14,gap:46,minPrice:994,avgPrice:1224,suggestTarget:1077},
-  {asin:'B007KFMAHY',name:'アサヒ ミンティア ドライハード 50粒×10個',count:2,gap:45,minPrice:1000,avgPrice:1000,suggestTarget:1000},
-  {asin:'B0B5CBKZ25',name:'by Amazon 炭酸水 レモン 500ml×24本',count:2,gap:42,minPrice:1265,avgPrice:1265,suggestTarget:1113},
+  {asin:'B0019GXU4M',name:'デルモンテ 食塩無添加トマトジュース 900g×12',count:13,gap:27,minPrice:3218,avgPrice:3218,suggestTarget:2832},
+  {asin:'B01MSSW5SI',name:'DHC 醗酵黒セサミン スタミナ 30日分',count:14,gap:46,minPrice:1174,avgPrice:1174,suggestTarget:1033},
+  {asin:'B007KFMAHY',name:'アサヒ ミンティア ドライハード 50粒×10個',count:2,gap:45,minPrice:1030,avgPrice:1030,suggestTarget:906},
+  {asin:'B0B5CBKZ25',name:'by Amazon 炭酸水 レモン 500ml×24本',count:2,gap:42,minPrice:1332,avgPrice:1332,suggestTarget:1172},
   {asin:'B01FDKXSIW',name:'グミサプリ 鉄 葉酸 60粒 30日分',count:3,gap:29,minPrice:1111,avgPrice:1110,suggestTarget:977},
-  {asin:'B0DTV3N7V9',name:'福咲新堂 特選だし 完全無添加 あご入り 200g',count:4,gap:58,minPrice:1273,avgPrice:1495,suggestTarget:1316},
-  {asin:'B00KPRNWSA',name:'高千穂漢方 発芽はとむぎ茶 業務用 88P',count:9,gap:72,minPrice:904,avgPrice:1228,suggestTarget:1081},
+  {asin:'B0DTV3N7V9',name:'福咲新堂 特選だし 完全無添加 あご入り 200g',count:4,gap:58,minPrice:1990,avgPrice:1990,suggestTarget:1751},
+  {asin:'B00KPRNWSA',name:'高千穂漢方 発芽はとむぎ茶 業務用 88P',count:9,gap:72,minPrice:1064,avgPrice:1064,suggestTarget:936},
   {asin:'B07G736ZRK',name:'Bragg アップルサイダービネガー 946ml',count:2,gap:77,minPrice:1749,avgPrice:1749,suggestTarget:1539},
   {asin:'B01FDLEHAY',name:'グミサプリ ルテイン 60粒 30日分',count:4,gap:84,minPrice:1601,avgPrice:1610,suggestTarget:1417},
   {asin:'B079Y6SGJ4',name:'ザバス ホエイプロテイン100 リッチショコラ 980g',count:2,gap:92,minPrice:4161,avgPrice:4161,suggestTarget:3662},
-  {asin:'B07B66RX3L',name:'GUM 歯周プロケア ソフトピック 30本×4個',count:3,gap:97,minPrice:881,avgPrice:970,suggestTarget:854},
+  {asin:'B07B66RX3L',name:'GUM 歯周プロケア ソフトピック 30本×4個',count:3,gap:97,minPrice:1246,avgPrice:1246,suggestTarget:1096},
   {asin:'B07CS34XKQ',name:'カウブランド 無添加メイク落とし ミルク×3',count:2,gap:117,minPrice:1368,avgPrice:1368,suggestTarget:1204},
-  {asin:'B07B3BXZ43',name:'ムカデハンター 2個入り',count:5,gap:118,minPrice:1431,avgPrice:2353,suggestTarget:2071},
-  {asin:'B0778X3QZ1',name:'リーチ ウルトラクリーンフロス 27m',count:4,gap:118,minPrice:1295,avgPrice:1295,suggestTarget:1140},
-  {asin:'B01B74CAB4',name:'ディアナチュラ ビタミンC 120粒 60日分',count:7,gap:129,minPrice:741,avgPrice:741,suggestTarget:652},
+  {asin:'B07B3BXZ43',name:'ムカデハンター 2個入り',count:5,gap:118,minPrice:502,avgPrice:502,suggestTarget:442},
+  {asin:'B0778X3QZ1',name:'リーチ ウルトラクリーンフロス 27m',count:4,gap:118,minPrice:446,avgPrice:446,suggestTarget:392},
+  {asin:'B01B74CAB4',name:'ディアナチュラ ビタミンC 120粒 60日分',count:7,gap:129,minPrice:354,avgPrice:354,suggestTarget:312},
   {asin:'B088RN1K1Q',name:'ディアナチュラ 亜鉛 90粒 90日分',count:3,gap:138,minPrice:700,avgPrice:1405,suggestTarget:1236},
   {asin:'B07ZGV1BKD',name:'めぐりズム ホットアイマスク ラベンダー 16枚',count:2,gap:142,minPrice:3241,avgPrice:3241,suggestTarget:2852},
-  {asin:'B00KXU3FI6',name:'UCC 職人の珈琲 ドリップ 120杯',count:2,gap:177,minPrice:2984,avgPrice:2984,suggestTarget:2626},
+  {asin:'B00KXU3FI6',name:'UCC 職人の珈琲 ドリップ 120杯',count:2,gap:177,minPrice:3731,avgPrice:3731,suggestTarget:3283},
   {asin:'B07N1RNJMY',name:'カゴメ トマトジュース 食塩無添加 1L×6本',count:2,gap:10,minPrice:1899,avgPrice:1899,suggestTarget:1671},
-  {asin:'B091ZK7XH3',name:'Neutrogena ノルウェーフォーミュラ ボディミルク 450ml',count:3,gap:120,minPrice:1181,avgPrice:1181,suggestTarget:1039},
-  {asin:'B09TWB4CNZ',name:'NEC用 互換トナーカートリッジ 4色セット',count:2,gap:150,minPrice:0,avgPrice:0,suggestTarget:0},
+  {asin:'B091ZK7XH3',name:'Neutrogena ノルウェーフォーミュラ ボディミルク 450ml',count:3,gap:120,minPrice:1112,avgPrice:1112,suggestTarget:979},
+  {asin:'B09TWB4CNZ',name:'NEC用 互換トナーカートリッジ 4色セット',count:2,gap:150,minPrice:10820,avgPrice:10820,suggestTarget:9522},
   {asin:'B0BVBKQ68F',name:'訳あり ほしいも 900g 茨城産 無添加',count:2,gap:71,minPrice:1980,avgPrice:1980,suggestTarget:1742},
   {asin:'B00K0FGEJ6',name:'高儀 EARTH MAN バンドソー用 替ブレード',count:3,gap:174,minPrice:1553,avgPrice:2840,suggestTarget:2499},
-  {asin:'B07HB1Z4GQ',name:'サンペレグリノ 炭酸水 500ml×24本',count:2,gap:120,minPrice:3211,avgPrice:3211,suggestTarget:2826}
+  {asin:'B07HB1Z4GQ',name:'サンペレグリノ 炭酸水 500ml×24本',count:2,gap:120,minPrice:1658,avgPrice:1658,suggestTarget:1459}
 ];
 var prods=[],hf='all',notifOn=false;
 
