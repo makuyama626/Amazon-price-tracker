@@ -1,0 +1,19 @@
+{
+  "name": "Amazon 底値トラッカー",
+  "short_name": "底値トラッカー",
+  "description": "定期購入品の底値アラートアプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF9900",
+  "orientation": "portrait",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
