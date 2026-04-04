@@ -125,7 +125,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--sf
 <script>
 var KEY='amzn_v2';
 // 購入履歴481件から算出した実績価格データ
-// minPrice=過去購入最安値, avgPrice=平均購入価格, suggestTarget=推奨底値目安(平均の88%)
+// minPrice=過去最安値, avgPrice=平均購入価格, suggestTarget=推奨底値目安(平均の88%)
 var DATA=[
   {asin:'B0019GXU4M',name:'デルモンテ 食塩無添加トマトジュース 900g×12',count:13,gap:27,minPrice:3218,avgPrice:3218,suggestTarget:2832},
   {asin:'B01MSSW5SI',name:'DHC 醗酵黒セサミン スタミナ 30日分',count:14,gap:46,minPrice:1174,avgPrice:1174,suggestTarget:1033},
@@ -262,7 +262,7 @@ function addH(idx){
   var item=items[idx];
   for(var i=0;i<prods.length;i++){if(prods[i].asin===item.asin){toast('すでに監視中');return;}}
   // 推奨底値目安を初期値として設定
-  var suggestTarget=item.minPrice||item.suggestTarget||0;
+  var suggestTarget=item.suggestTarget||0;
   prods.unshift({
     id:Date.now(),name:item.name,asin:item.asin,
     ph:[{price:item.avgPrice||0,date:new Date().toISOString()}],
@@ -311,7 +311,7 @@ function setPrice(id){
   var defTarget=p.target||p.suggestTarget||Math.round((p.avgPrice||0)*0.88)||'';
   var price=parseFloat(prompt('現在の価格を入力（&#165;）\n\n参考：平均購入価格 &#165;'+(p.avgPrice||0).toLocaleString(),defPrice));
   if(isNaN(price)||price<=0) return;
-  var target=parseFloat(prompt('底値目安を入力（&#165;）\n\n参考：過去購入最安値 &#165;'+(p.minPrice||0).toLocaleString()+'\n推奨目安 &#165;'+(p.target||Math.round(price*0.88)).toLocaleString(),defTarget));
+  var target=parseFloat(prompt('底値目安を入力（&#165;）\n\n参考：過去最安値 &#165;'+(p.minPrice||0).toLocaleString()+'\n推奨目安 &#165;'+(p.target||Math.round(price*0.88)).toLocaleString(),defTarget));
   if(isNaN(target)||target<=0) return;
   p.ph[0]={price:price,date:new Date().toISOString()};
   p.target=target;p.lowestEver=Math.min(p.lowestEver||price,price,p.minPrice||price);
@@ -322,28 +322,67 @@ function checkPrice(id){
   var p=prods.find(function(x){return x.id===id;});
   if(!p) return;
   var prev=p.ph&&p.ph.length>0?p.ph[0].price:0;
-  var input=prompt(p.name.substring(0,25)+'\nAmazonの現在価格を入力（円）'+(prev?'\n前回: '+prev.toLocaleString()+'円':''),prev||'');
-  if(input===null) return;
-  var np=parseFloat(String(input).replace(/[^0-9.]/g,''));
+  // カスタム数値入力ダイアログを表示
+  showPriceInput(id,prev);
+}
+function showPriceInput(id,prev){
+  // 既存のダイアログがあれば削除
+  var old=document.getElementById('_pd');
+  if(old) old.remove();
+  var p=prods.find(function(x){return x.id===id;});
+  if(!p) return;
+  var minDate='';
+  if(p.minPriceDate){var md=new Date(p.minPriceDate);minDate=' ('+md.getFullYear()+'年'+(md.getMonth()+1)+'月'+md.getDate()+'日)';}
+  var minInfo=p.minPrice?'過去購入最安値: ¥'+p.minPrice.toLocaleString()+minDate:'';
+  var d=document.createElement('div');
+  d.id='_pd';
+  d.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  d.innerHTML='<div style="background:var(--sf);border-radius:16px;padding:24px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.3)">'+
+    '<div style="font-size:13px;color:var(--tx2);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name.substring(0,30)+'</div>'+
+    '<div style="font-size:15px;font-weight:600;margin-bottom:16px">現在価格を入力</div>'+
+    (minInfo?'<div style="font-size:12px;color:var(--tx3);margin-bottom:12px">'+minInfo+'</div>':'')+
+    '<div style="position:relative;margin-bottom:16px">'+
+      '<span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--tx2);">¥</span>'+
+      '<input id="_pi" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="'+(prev||'')+'" style="width:100%;padding:12px 12px 12px 28px;font-size:20px;font-weight:600;border:.5px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--tx);-webkit-appearance:none;outline:none;text-align:right;">'+
+    '</div>'+
+    '<div style="display:flex;gap:8px">'+
+      '<button onclick="document.getElementById('_pd').remove()" style="flex:1;padding:12px;border-radius:10px;border:.5px solid var(--bd);background:var(--sf2);color:var(--tx);font-size:15px;cursor:pointer">キャンセル</button>'+
+      '<button onclick="_submitPrice('+id+')" style="flex:1;padding:12px;border-radius:10px;border:none;background:#FF9900;color:#fff;font-size:15px;font-weight:600;cursor:pointer">OK</button>'+
+    '</div>'+
+  '</div>';
+  document.body.appendChild(d);
+  // キーボードを数値モードで開く
+  setTimeout(function(){var i=document.getElementById('_pi');if(i){i.focus();i.select();}},100);
+  // EnterキーでOK
+  document.getElementById('_pi').addEventListener('keydown',function(e){if(e.key==='Enter')_submitPrice(id);});
+}
+function _submitPrice(id){
+  var inp=document.getElementById('_pi');
+  if(!inp) return;
+  var np=parseFloat(inp.value);
+  var overlay=document.getElementById('_pd');
+  if(overlay) overlay.remove();
   if(isNaN(np)||np<=0){toast('正しい価格を入力してください');return;}
+  var p=prods.find(function(x){return x.id===id;});
+  if(!p) return;
   var old=p.ph&&p.ph.length>0?p.ph[0].price:np;
   p.ph=p.ph||[];
-  p.ph.unshift({price:np,date:new Date().toISOString()});
+  var now=new Date().toISOString();
+  p.ph.unshift({price:np,date:now});
   if(p.ph.length>30) p.ph=p.ph.slice(0,30);
-  // 入力価格が過去購入最安値を下回った場合→最安値更新+アラート
   var prevMin=p.minPrice||0;
-  if(prevMin>0&&np<prevMin){
+  if(prevMin===0||np<prevMin){
     p.minPrice=np;
-    // 底値目安も同時に更新
-    if(np<p.target) p.target=np;
+    p.minPriceDate=now;
+    if(np<(p.target||np)) p.target=np;
     setTimeout(function(){
       toast('🎉 新記録！過去購入最安値更新 ¥'+np.toLocaleString());
-      sendNotif('新記録！過去購入最安値更新','「'+p.name.substring(0,20)+'」 ¥'+np.toLocaleString());
-    },400);
+      sendNotif('新記録！','「'+p.name.substring(0,20)+'」過去購入最安値更新 ¥'+np.toLocaleString());
+    },300);
   } else if(p.target>0&&np<=p.target*1.05){
     setTimeout(function(){
       toast('底値近くです！🎉');
-      sendNotif('底値アラート','「'+p.name.substring(0,20)+'」が底値近くです！');
+      sendNotif('底値アラート','「'+p.name.substring(0,20)+'」底値近くです！');
     },600);
   }
   p.lowestEver=p.minPrice||np;
@@ -389,7 +428,7 @@ function render(){
     // 価格根拠の表示
     var priceBase='';
     if(p.minPrice>0){
-      priceBase='<div class="price-hint">過去購入最安値 &#165;'+p.minPrice.toLocaleString()+' / 平均 &#165;'+(p.avgPrice||0).toLocaleString()+'</div>';
+      priceBase='<div class="price-hint">過去最安値 &#165;'+p.minPrice.toLocaleString()+' / 平均 &#165;'+(p.avgPrice||0).toLocaleString()+'</div>';
     }
     var body='';
     if(ns){
