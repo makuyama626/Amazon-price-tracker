@@ -125,7 +125,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--sf
 <script>
 var KEY='amzn_v2';
 // 購入履歴481件から算出した実績価格データ
-// minPrice=過去最安値, avgPrice=平均購入価格, suggestTarget=推奨底値目安(平均の88%)
+// minPrice=過去購入最安値, avgPrice=平均購入価格, suggestTarget=推奨底値目安(平均の88%)
 var DATA=[
   {asin:'B0019GXU4M',name:'デルモンテ 食塩無添加トマトジュース 900g×12',count:13,gap:27,minPrice:3218,avgPrice:3218,suggestTarget:2832},
   {asin:'B01MSSW5SI',name:'DHC 醗酵黒セサミン スタミナ 30日分',count:14,gap:46,minPrice:1174,avgPrice:1174,suggestTarget:1033},
@@ -262,7 +262,7 @@ function addH(idx){
   var item=items[idx];
   for(var i=0;i<prods.length;i++){if(prods[i].asin===item.asin){toast('すでに監視中');return;}}
   // 推奨底値目安を初期値として設定
-  var suggestTarget=item.suggestTarget||0;
+  var suggestTarget=item.minPrice||item.suggestTarget||0;
   prods.unshift({
     id:Date.now(),name:item.name,asin:item.asin,
     ph:[{price:item.avgPrice||0,date:new Date().toISOString()}],
@@ -311,7 +311,7 @@ function setPrice(id){
   var defTarget=p.target||p.suggestTarget||Math.round((p.avgPrice||0)*0.88)||'';
   var price=parseFloat(prompt('現在の価格を入力（&#165;）\n\n参考：平均購入価格 &#165;'+(p.avgPrice||0).toLocaleString(),defPrice));
   if(isNaN(price)||price<=0) return;
-  var target=parseFloat(prompt('底値目安を入力（&#165;）\n\n参考：過去最安値 &#165;'+(p.minPrice||0).toLocaleString()+'\n推奨目安 &#165;'+(p.target||Math.round(price*0.88)).toLocaleString(),defTarget));
+  var target=parseFloat(prompt('底値目安を入力（&#165;）\n\n参考：過去購入最安値 &#165;'+(p.minPrice||0).toLocaleString()+'\n推奨目安 &#165;'+(p.target||Math.round(price*0.88)).toLocaleString(),defTarget));
   if(isNaN(target)||target<=0) return;
   p.ph[0]={price:price,date:new Date().toISOString()};
   p.target=target;p.lowestEver=Math.min(p.lowestEver||price,price,p.minPrice||price);
@@ -329,17 +329,27 @@ function checkPrice(id){
   var old=p.ph&&p.ph.length>0?p.ph[0].price:np;
   p.ph=p.ph||[];
   p.ph.unshift({price:np,date:new Date().toISOString()});
-  if(!p.lowestEver||np<p.lowestEver) p.lowestEver=np;
   if(p.ph.length>30) p.ph=p.ph.slice(0,30);
-  save();render();
-  var d=np-old;
-  toast('¥'+np.toLocaleString()+(old&&old!==np?' ('+(d>0?'+':'')+d.toLocaleString()+')':''));
-  if(p.target>0&&np<=p.target*1.05){
+  // 入力価格が過去購入最安値を下回った場合→最安値更新+アラート
+  var prevMin=p.minPrice||0;
+  if(prevMin>0&&np<prevMin){
+    p.minPrice=np;
+    // 底値目安も同時に更新
+    if(np<p.target) p.target=np;
+    setTimeout(function(){
+      toast('🎉 新記録！過去購入最安値更新 ¥'+np.toLocaleString());
+      sendNotif('新記録！過去購入最安値更新','「'+p.name.substring(0,20)+'」 ¥'+np.toLocaleString());
+    },400);
+  } else if(p.target>0&&np<=p.target*1.05){
     setTimeout(function(){
       toast('底値近くです！🎉');
       sendNotif('底値アラート','「'+p.name.substring(0,20)+'」が底値近くです！');
     },600);
   }
+  p.lowestEver=p.minPrice||np;
+  save();render();
+  var d=np-old;
+  toast('¥'+np.toLocaleString()+(old&&old!==np?' ('+(d>0?'+':'')+d.toLocaleString()+')':''));
 }
 
 function getStatus(p){
@@ -379,7 +389,7 @@ function render(){
     // 価格根拠の表示
     var priceBase='';
     if(p.minPrice>0){
-      priceBase='<div class="price-hint">過去最安値 &#165;'+p.minPrice.toLocaleString()+' / 平均 &#165;'+(p.avgPrice||0).toLocaleString()+'</div>';
+      priceBase='<div class="price-hint">過去購入最安値 &#165;'+p.minPrice.toLocaleString()+' / 平均 &#165;'+(p.avgPrice||0).toLocaleString()+'</div>';
     }
     var body='';
     if(ns){
