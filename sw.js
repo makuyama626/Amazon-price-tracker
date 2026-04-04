@@ -1,4 +1,4 @@
-const CACHE='amzn-v2';
+const CACHE='amzn-v3';
 self.addEventListener('install',function(e){
   self.skipWaiting();
 });
