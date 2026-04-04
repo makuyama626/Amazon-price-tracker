@@ -106,6 +106,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--sf
 </div>
 <div id="pa" style="display:none">
   <div class="card">
+    <div class="st">スクショから自動入力</div>
+    <label style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:1.5px dashed var(--bd);border-radius:12px;cursor:pointer;color:var(--tx2);font-size:14px;font-weight:500;margin-bottom:10px" id="ss-label">
+      <span style="font-size:22px">📷</span> Amazonのスクショを選択
+      <input type="file" id="ss-input" accept="image/*" style="display:none" onchange="analyzeScreenshot(this)">
+    </label>
+    <div id="ss-status" style="font-size:12px;color:var(--tx3);text-align:center;margin-bottom:10px;display:none"></div>
+  </div>
+  <div class="card">
     <div class="st">商品を追加</div>
     <div class="fi"><label>商品名</label><input id="in" type="text" placeholder="例：シャンプー 詰め替え"></div>
     <div class="r2">
@@ -288,6 +296,52 @@ function addH(idx){
   }
 }
 
+function analyzeScreenshot(input){
+  var file=input.files[0];
+  if(!file) return;
+  var st=document.getElementById('ss-status');
+  var label=document.getElementById('ss-label');
+  st.style.display='block';
+  st.textContent='解析中... 少しお待ちください';
+  label.style.opacity='0.5';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var b64=e.target.result.split(',')[1];
+    var mediaType=file.type||'image/jpeg';
+    fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:500,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mediaType,data:b64}},
+          {type:'text',text:'このAmazonの商品ページのスクリーンショットから以下を抽出してください。JSONのみで返答してください（他のテキストなし）:\n{"name":"商品名（短く50文字以内）","asin":"ASIN10桁（URLまたはページ内から）","price":数値（円、税込現在価格、数値のみ）}\nASINが見つからない場合はnull、価格が見つからない場合は0にしてください。'}
+        ]}]
+      })
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var text=data.content&&data.content[0]&&data.content[0].text||'{}';
+      var clean=text.replace(/```json|```/g,'').trim();
+      var result=JSON.parse(clean);
+      if(result.name) document.getElementById('in').value=result.name;
+      if(result.price&&result.price>0) document.getElementById('ip').value=result.price;
+      if(result.asin&&result.asin!=='null') document.getElementById('ia').value=result.asin;
+      st.textContent='✅ 解析完了！内容を確認して追加ボタンを押してください';
+      st.style.color='#2E7D32';
+      label.style.opacity='1';
+      input.value='';
+    })
+    .catch(function(err){
+      st.textContent='⚠️ 解析失敗。手動で入力してください';
+      st.style.color='#e53935';
+      label.style.opacity='1';
+      input.value='';
+    });
+  };
+  reader.readAsDataURL(file);
+}
 function addM(){
   var n=document.getElementById('in').value.trim();
   var p=parseFloat(document.getElementById('ip').value);
