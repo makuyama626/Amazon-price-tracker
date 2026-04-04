@@ -156,22 +156,12 @@ var prods=[],hf='all',notifOn=false;
 
 window.addEventListener('DOMContentLoaded',function(){
   try{prods=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){prods=[];}
-  try{window._hiddenAsins=new Set(JSON.parse(localStorage.getItem(KEY+'_hidden')||'[]'));}catch(e){window._hiddenAsins=new Set();}
   if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
   if('Notification' in window) notifOn=Notification.permission==='granted';
   updateBell();render();renderH();
 });
 
 function save(){localStorage.setItem(KEY,JSON.stringify(prods));}
-function hideFromHistory(asin){
-  if(!confirm('この商品を履歴リストから非表示にしますか？
-再表示するにはアプリのデータをリセットする必要があります')) return;
-  window._hiddenAsins=window._hiddenAsins||new Set();
-  window._hiddenAsins.add(asin);
-  localStorage.setItem(KEY+'_hidden',JSON.stringify([...window._hiddenAsins]));
-  renderH();
-  toast('非表示にしました');
-}
 
 function toast(msg){
   var t=document.getElementById('toast');
@@ -236,9 +226,8 @@ function renderH(){
 
   var items=[];
   var seen={};
-  var hidden=window._hiddenAsins||new Set();
   for(var i=0;i<DATA.length;i++){
-    if(!seen[DATA[i].asin]&&!hidden.has(DATA[i].asin)){seen[DATA[i].asin]=true;items.push(DATA[i]);}
+    if(!seen[DATA[i].asin]){seen[DATA[i].asin]=true;items.push(DATA[i]);}
   }
   if(hf==='monthly') items=items.filter(function(x){return x.gap<=35;});
   else if(hf==='bi') items=items.filter(function(x){return x.gap>35&&x.gap<=90;});
@@ -261,7 +250,7 @@ function renderH(){
     var btn=t
       ? '<span style="color:#2E7D32;font-size:12px;font-weight:600">&#10003; 監視中</span>'
       : '<button class="btn bto" style="font-size:12px;padding:6px 12px" onclick="addH('+i+')">+ 追加</button>';
-    html+='<div class="card" style="position:relative"><button onclick="hideFromHistory(\''+item.asin+'\')" style="position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--sf3);border:.5px solid var(--bd);cursor:pointer;font-size:13px;color:var(--tx3);line-height:1">×</button><div class="cn" style="padding-right:32px">'+item.name+'</div>'+priceInfo+'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:8px"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="bdg '+gc+'">'+gl+'</span><span class="bdg bn">約4'+item.gap+'日ごと</span><span class="bdg bn">'+item.count+'回購入</span></div>'+btn+'</div></div>';
+    html+='<div class="card"><div class="cn">'+item.name+'</div>'+priceInfo+'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:8px"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="bdg '+gc+'">'+gl+'</span><span class="bdg bn">約'+item.gap+'日ごと</span><span class="bdg bn">'+item.count+'回購入</span></div>'+btn+'</div></div>';
   }
   hl.innerHTML=html;
   window._filteredItems=items;
@@ -337,36 +326,76 @@ function checkPrice(id){
   showPriceInput(id,prev);
 }
 function showPriceInput(id,prev){
-  // 既存のダイアログがあれば削除
   var old=document.getElementById('_pd');
   if(old) old.remove();
   var p=prods.find(function(x){return x.id===id;});
   if(!p) return;
   var minDate='';
-  if(p.minPriceDate){var md=new Date(p.minPriceDate);minDate=' ('+md.getFullYear()+'年'+(md.getMonth()+1)+'月'+md.getDate()+'日)';}
-  var minInfo=p.minPrice?'過去購入最安値: ¥'+p.minPrice.toLocaleString()+minDate:'';
-  var d=document.createElement('div');
-  d.id='_pd';
-  d.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-  d.innerHTML='<div style="background:var(--sf);border-radius:16px;padding:24px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.3)">'+
-    '<div style="font-size:13px;color:var(--tx2);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name.substring(0,30)+'</div>'+
-    '<div style="font-size:15px;font-weight:600;margin-bottom:16px">現在価格を入力</div>'+
-    (minInfo?'<div style="font-size:12px;color:var(--tx3);margin-bottom:12px">'+minInfo+'</div>':'')+
-    '<div style="position:relative;margin-bottom:16px">'+
-      '<span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--tx2);">¥</span>'+
-      '<input id="_pi" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="'+(prev||'')+'" style="width:100%;padding:12px 12px 12px 28px;font-size:20px;font-weight:600;border:.5px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--tx);-webkit-appearance:none;outline:none;text-align:right;">'+
-    '</div>'+
-    '<div style="display:flex;gap:8px">'+
-      '<button onclick="document.getElementById('_pd').remove()" style="flex:1;padding:12px;border-radius:10px;border:.5px solid var(--bd);background:var(--sf2);color:var(--tx);font-size:15px;cursor:pointer">キャンセル</button>'+
-      '<button onclick="_submitPrice('+id+')" style="flex:1;padding:12px;border-radius:10px;border:none;background:#FF9900;color:#fff;font-size:15px;font-weight:600;cursor:pointer">OK</button>'+
-    '</div>'+
-  '</div>';
-  document.body.appendChild(d);
-  // キーボードを数値モードで開く
-  setTimeout(function(){var i=document.getElementById('_pi');if(i){i.focus();i.select();}},100);
-  // EnterキーでOK
-  document.getElementById('_pi').addEventListener('keydown',function(e){if(e.key==='Enter')_submitPrice(id);});
+  if(p.minPriceDate){
+    var md=new Date(p.minPriceDate);
+    minDate=' ('+md.getFullYear()+'年'+(md.getMonth()+1)+'月'+md.getDate()+'日)';
+  }
+  // overlay
+  var ov=document.createElement('div');
+  ov.id='_pd';
+  ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  // card
+  var card=document.createElement('div');
+  card.style.cssText='background:var(--sf);border-radius:16px;padding:24px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.3)';
+  // name label
+  var nm=document.createElement('div');
+  nm.style.cssText='font-size:13px;color:var(--tx2);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+  nm.textContent=p.name.substring(0,30);
+  card.appendChild(nm);
+  // title
+  var tl=document.createElement('div');
+  tl.style.cssText='font-size:15px;font-weight:600;margin-bottom:16px';
+  tl.textContent='現在価格を入力';
+  card.appendChild(tl);
+  // min price info
+  if(p.minPrice>0){
+    var mi=document.createElement('div');
+    mi.style.cssText='font-size:12px;color:var(--tx3);margin-bottom:12px';
+    mi.textContent='過去購入最安値: ¥'+p.minPrice.toLocaleString()+minDate;
+    card.appendChild(mi);
+  }
+  // input wrapper
+  var iw=document.createElement('div');
+  iw.style.cssText='position:relative;margin-bottom:16px';
+  var yen=document.createElement('span');
+  yen.style.cssText='position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--tx2)';
+  yen.textContent='¥';
+  var inp=document.createElement('input');
+  inp.id='_pi';
+  inp.type='number';
+  inp.inputMode='numeric';
+  inp.pattern='[0-9]*';
+  inp.placeholder='0';
+  inp.value=prev||'';
+  inp.style.cssText='width:100%;padding:12px 12px 12px 28px;font-size:20px;font-weight:600;border:.5px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--tx);-webkit-appearance:none;outline:none;text-align:right';
+  iw.appendChild(yen);
+  iw.appendChild(inp);
+  card.appendChild(iw);
+  // buttons
+  var btns=document.createElement('div');
+  btns.style.cssText='display:flex;gap:8px';
+  var cancel=document.createElement('button');
+  cancel.style.cssText='flex:1;padding:12px;border-radius:10px;border:.5px solid var(--bd);background:var(--sf2);color:var(--tx);font-size:15px;cursor:pointer';
+  cancel.textContent='キャンセル';
+  cancel.onclick=function(){ov.remove();};
+  var ok=document.createElement('button');
+  ok.style.cssText='flex:1;padding:12px;border-radius:10px;border:none;background:#FF9900;color:#fff;font-size:15px;font-weight:600;cursor:pointer';
+  ok.textContent='OK';
+  ok.onclick=function(){_submitPrice(id);};
+  btns.appendChild(cancel);
+  btns.appendChild(ok);
+  card.appendChild(btns);
+  ov.appendChild(card);
+  document.body.appendChild(ov);
+  setTimeout(function(){inp.focus();inp.select();},100);
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter') _submitPrice(id);});
 }
+
 function _submitPrice(id){
   var inp=document.getElementById('_pi');
   if(!inp) return;
