@@ -108,22 +108,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--sf
   <div class="card">
     <div class="st" style="margin-bottom:12px">AmazonのURLから追加</div>
     <div class="fi">
-      <label>Amazon商品ページのURL</label>
-      <input id="iu" type="url" inputmode="url" placeholder="https://www.amazon.co.jp/dp/B0XXXXXXXX" style="-webkit-appearance:none" oninput="extractAsin(this.value)">
-      <div id="asin-badge" style="display:none;margin-top:6px;font-size:12px;background:var(--sf3);padding:5px 10px;border-radius:8px;color:var(--tx2)"></div>
+      <label>Amazon商品ページのURLを貼り付け</label>
+      <input id="iu" type="url" inputmode="url" placeholder="https://www.amazon.co.jp/dp/B0XXXXXXXX" oninput="onUrlInput(this.value)">
+      <div id="asin-badge" style="display:none;margin-top:6px;font-size:12px;padding:6px 10px;border-radius:8px;background:var(--sf3);color:var(--tx3)"></div>
     </div>
-    <div class="fi"><label>商品名</label><input id="in" type="text" placeholder="例：ミンティア ドライハード 10個入"></div>
+    <div class="fi"><label>商品名</label><input id="in" type="text" placeholder="URLを貼ると自動入力されます"></div>
     <div class="fi">
       <label>現在の価格（円）</label>
       <div style="position:relative">
-        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx2)">&#165;</span>
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx2);font-size:15px">&#165;</span>
         <input id="ip" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="0" style="width:100%;padding:11px 12px 11px 26px;font-size:18px;font-weight:600;border:.5px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--tx);-webkit-appearance:none;outline:none">
       </div>
     </div>
     <input id="ia" type="hidden">
     <button class="btn bto bbl" onclick="addM()" style="margin-top:4px">+ 追加する</button>
   </div>
-</div></div>
+</div>
 <div class="bnav">
   <div class="bi on" id="b0" onclick="showTab('t',0)"><svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg><span>監視</span></div>
   <div class="bi" id="b1" onclick="showTab('h',1)"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg><span>履歴</span></div>
@@ -342,31 +342,42 @@ function analyzeScreenshot(input){
   };
   reader.readAsDataURL(file);
 }
-function extractAsin(url){
-  // AmazonのURLパターンからASINを抽出
-  // パターン: /dp/XXXXXXXXXX  /gp/product/XXXXXXXXXX  ?asin=XXXXXXXXXX
-  var m = url.match(/\/dp\/([A-Z0-9]{10})/i) ||
-           url.match(/\/gp\/product\/([A-Z0-9]{10})/i) ||
-           url.match(/[?&]asin=([A-Z0-9]{10})/i) ||
-           url.match(/\/([A-Z0-9]{10})(?:[\/?#]|$)/);
-  var badge = document.getElementById('asin-badge');
-  var iaEl = document.getElementById('ia');
-  if(m && m[1]){
-    var asin = m[1].toUpperCase();
-    iaEl.value = asin;
-    badge.style.display = 'block';
-    badge.innerHTML = 'ASIN: <b>' + asin + '</b> ✅';
-    badge.style.color = '#2E7D32';
-  } else {
-    iaEl.value = '';
-    if(url.length > 10){
-      badge.style.display = 'block';
-      badge.innerHTML = 'ASINが見つかりません';
-      badge.style.color = '#e53935';
-    } else {
-      badge.style.display = 'none';
-    }
+function onUrlInput(url){
+  var m=url.match(/\/dp\/([A-Z0-9]{10})/i)||
+         url.match(/\/gp\/product\/([A-Z0-9]{10})/i)||
+         url.match(/[?&]asin=([A-Z0-9]{10})/i);
+  var badge=document.getElementById('asin-badge');
+  var iaEl=document.getElementById('ia');
+  if(!m||!m[1]){
+    iaEl.value='';
+    badge.style.display=url.length>10?'block':'none';
+    badge.innerHTML='ASINが見つかりません';
+    badge.style.color='#e53935';
+    return;
   }
+  var asin=m[1].toUpperCase();
+  iaEl.value=asin;
+  badge.style.display='block';
+  badge.style.color='var(--tx3)';
+  badge.innerHTML='ASIN: <b>'+asin+'</b> — 商品名を取得中…';
+  fetch('https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent('https://www.amazon.co.jp/dp/'+asin))
+    .then(function(r){return r.text();})
+    .then(function(h){
+      var tm=h.match(/id="productTitle"[^>]*>([\s\S]{1,400}?)<\/span>/);
+      if(tm&&tm[1]){
+        var t=tm[1].replace(/\s+/g,' ').trim();
+        document.getElementById('in').value=t.substring(0,60);
+        badge.innerHTML='ASIN: <b>'+asin+'</b> ✅ 商品名を自動入力しました';
+        badge.style.color='#2E7D32';
+      } else {
+        badge.innerHTML='ASIN: <b>'+asin+'</b> — 商品名を手入力してください';
+        badge.style.color='var(--tx3)';
+      }
+    })
+    .catch(function(){
+      badge.innerHTML='ASIN: <b>'+asin+'</b> (取得失敗—手入力を)';
+      badge.style.color='var(--tx3)';
+    });
 }
 function addM(){
   var n=document.getElementById('in').value.trim();
@@ -374,15 +385,15 @@ function addM(){
   var a=document.getElementById('ia').value.trim();
   if(!n){toast('商品名を入力してください');return;}
   if(!p||p<=0){toast('価格を入力してください');return;}
-  var t=p;
-  prods.unshift({id:Date.now(),name:n,asin:a,ph:[{price:p,date:new Date().toISOString()}],target:t,lowestEver:p});
+  prods.unshift({id:Date.now(),name:n,asin:a,ph:[{price:p,date:new Date().toISOString()}],target:p,lowestEver:p,minPrice:p,minPriceDate:new Date().toISOString()});
   save();render();
   document.getElementById('iu').value='';
   document.getElementById('in').value='';
   document.getElementById('ip').value='';
   document.getElementById('ia').value='';
   var b=document.getElementById('asin-badge');if(b)b.style.display='none';
-  showTab('t',0);toast('追加しました！');
+  showTab('t',0);
+  toast('追加しました！');
 }
 
 function del(id){
