@@ -156,12 +156,20 @@ var prods=[],hf='all',notifOn=false;
 
 window.addEventListener('DOMContentLoaded',function(){
   try{prods=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){prods=[];}
+  window._hidden=new Set(JSON.parse(localStorage.getItem(KEY+'_h')||'[]'));
   if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
   if('Notification' in window) notifOn=Notification.permission==='granted';
   updateBell();render();renderH();
 });
 
 function save(){localStorage.setItem(KEY,JSON.stringify(prods));}
+function hideItem(asin){
+  window._hidden=window._hidden||new Set();
+  window._hidden.add(asin);
+  localStorage.setItem(KEY+'_h',JSON.stringify([...window._hidden]));
+  renderH();
+  toast('非表示にしました');
+}
 
 function toast(msg){
   var t=document.getElementById('toast');
@@ -227,7 +235,7 @@ function renderH(){
   var items=[];
   var seen={};
   for(var i=0;i<DATA.length;i++){
-    if(!seen[DATA[i].asin]){seen[DATA[i].asin]=true;items.push(DATA[i]);}
+    if(!seen[DATA[i].asin]&&!(window._hidden||new Set()).has(DATA[i].asin)){seen[DATA[i].asin]=true;items.push(DATA[i]);}
   }
   if(hf==='monthly') items=items.filter(function(x){return x.gap<=35;});
   else if(hf==='bi') items=items.filter(function(x){return x.gap>35&&x.gap<=90;});
@@ -250,7 +258,7 @@ function renderH(){
     var btn=t
       ? '<span style="color:#2E7D32;font-size:12px;font-weight:600">&#10003; 監視中</span>'
       : '<button class="btn bto" style="font-size:12px;padding:6px 12px" onclick="addH('+i+')">+ 追加</button>';
-    html+='<div class="card"><div class="cn">'+item.name+'</div>'+priceInfo+'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:8px"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="bdg '+gc+'">'+gl+'</span><span class="bdg bn">約'+item.gap+'日ごと</span><span class="bdg bn">'+item.count+'回購入</span></div>'+btn+'</div></div>';
+    html+='<div class="card" style="position:relative">'+'<button data-asin="'+item.asin+'" onclick="hideItem(this.dataset.asin)" style="position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;background:var(--sf3);border:.5px solid var(--bd);cursor:pointer;font-size:15px;color:var(--tx2);line-height:1">&times;</button>'+'<div class="cn" style="padding-right:32px">'+item.name+'</div>'+priceInfo+'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:8px"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="bdg '+gc+'">'+gl+'</span><span class="bdg bn">約'+item.gap+'日ごと</span><span class="bdg bn">'+item.count+'回購入</span></div>'+btn+'</div></div>';
   }
   hl.innerHTML=html;
   window._filteredItems=items;
