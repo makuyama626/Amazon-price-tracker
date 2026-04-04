@@ -562,7 +562,7 @@ function render(){
     var bp=ns?0:Math.max(5,Math.min(100,Math.round((1-(cur-p.target)/(cur*0.5))*100)));
     var bc=!cur?'#ccc':cur<=p.target?'#2E7D32':cur<=p.target*1.05?'#FF9900':'#ddd';
     var al=p.asin?'<a href="https://www.amazon.co.jp/dp/'+p.asin+'" target="_blank" style="font-size:11px;color:#0070c9;text-decoration:none">Amazon&#8599;</a>':'';
-    var gb=p.gap?'<span class="bdg bn">約'+p.gap+'日ごと</span>':'';
+    var gb='';
     // 価格根拠の表示
     var priceBase='';
     if(p.minPrice>0){
@@ -576,7 +576,7 @@ function render(){
     } else {
       body='<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px"><div class="pr'+(cur<=p.target?' lo':'')+'" >&#165;'+cur.toLocaleString()+'</div><div><div style="font-size:10px;color:var(--tx3)">底値目安</div><div style="font-size:13px;font-weight:600;color:var(--tx2)">&#165;'+p.target.toLocaleString()+'</div></div></div>'+priceBase+'<div class="pg"><div class="pgf" style="width:'+bp+'%;background:'+bc+'"></div></div>';
     }
-    html+='<div class="card'+(st.al?' al':'')+'"><button class="del" onclick="del('+p.id+')">&#10005;</button><div class="cn">'+p.name+'</div>'+body+'<div class="mt"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="bdg '+st.cls+'">'+st.label+'</span>'+gb+al+'</div>'+(!ns?'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:var(--tx3)">'+fmtDate(p.ph[0].date)+'</span><button class="btn" style="font-size:12px;padding:5px 10px" onclick="checkPrice('+p.id+')">確認</button></div>':'')+'</div></div>';
+    html+='<div class="card'+(st.al?' al':'')+'"><button class="del" onclick="del('+p.id+')">&#10005;</button><div class="cn">'+p.name+'</div>'+body+'<div class="mt"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="bdg '+st.cls+'">'+st.label+'</span>'+gb+al+'</div>'+(!ns?'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:var(--tx3)">'+fmtDate(p.ph[0].date)+'</span><button class="btn" style="font-size:12px;padding:5px 10px" onclick="checkPrice('+p.id+')">現在価格入力</button></div>':'')+'</div></div>';
   }
   list.innerHTML=html;
   document.getElementById('st').textContent=prods.length;
