@@ -260,8 +260,8 @@ function renderH(){
     var gc=item.gap<=35?'ba':item.gap<=90?'bw':'bg';
     var gl=item.gap<=35?'月1回以上':item.gap<=90?'2〜3ヶ月':'半年以内';
     var priceInfo='';
-    if(item.avgPrice>0){
-      priceInfo='<div class="price-hint">平均購入価格 &#165;'+item.avgPrice.toLocaleString()+' / 最安値 &#165;'+item.minPrice.toLocaleString()+'</div>';
+    if(item.minPrice>0){
+      priceInfo='<div class="price-hint">過去購入最安値 ¥'+item.minPrice.toLocaleString()+'</div>';
     }
     var btn=t
       ? '<span style="color:#2E7D32;font-size:12px;font-weight:600">&#10003; 監視中</span>'
@@ -566,12 +566,13 @@ function render(){
     // 価格根拠の表示
     var priceBase='';
     if(p.minPrice>0){
-      priceBase='<div class="price-hint">過去最安値 &#165;'+p.minPrice.toLocaleString()+' / 平均 &#165;'+(p.avgPrice||0).toLocaleString()+'</div>';
+      var _md='';
+      if(p.minPriceDate){var _dt=new Date(p.minPriceDate);_md='（'+_dt.getFullYear()+'年'+(_dt.getMonth()+1)+'月'+_dt.getDate()+'日）';}
+      priceBase='<div class="price-hint">過去購入最安値 ¥'+p.minPrice.toLocaleString()+_md+'</div>';
     }
     var body='';
     if(ns){
-      var hint='';
-      if(p.avgPrice>0) hint=' （参考：平均 &#165;'+p.avgPrice.toLocaleString()+'）';
+      var hint=''
       body='<button class="sb" onclick="setPrice('+p.id+')">価格・底値を設定する →'+hint+'</button>';
     } else {
       body='<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px"><div class="pr'+(cur<=p.target?' lo':'')+'" >&#165;'+cur.toLocaleString()+'</div><div><div style="font-size:10px;color:var(--tx3)">底値目安</div><div style="font-size:13px;font-weight:600;color:var(--tx2)">&#165;'+p.target.toLocaleString()+'</div></div></div>'+priceBase+'<div class="pg"><div class="pgf" style="width:'+bp+'%;background:'+bc+'"></div></div>';
