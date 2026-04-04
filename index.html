@@ -320,10 +320,9 @@ function setPrice(id){
 
 function checkPrice(id){
   var p=prods.find(function(x){return x.id===id;});
-  if(!p){return;}
+  if(!p) return;
   var prev=p.ph&&p.ph.length>0?p.ph[0].price:0;
-  var label=p.name.substring(0,25);
-  var input=prompt(label+'\n\nAmazonの現在価格を入力（円）'+(prev?'\n前回: '+prev.toLocaleString()+'円':''),prev||'');
+  var input=prompt(p.name.substring(0,25)+'\nAmazonの現在価格を入力（円）'+(prev?'\n前回: '+prev.toLocaleString()+'円':''),prev||'');
   if(input===null) return;
   var np=parseFloat(String(input).replace(/[^0-9.]/g,''));
   if(isNaN(np)||np<=0){toast('正しい価格を入力してください');return;}
@@ -334,11 +333,11 @@ function checkPrice(id){
   if(p.ph.length>30) p.ph=p.ph.slice(0,30);
   save();render();
   var d=np-old;
-  toast('\u00a5'+np.toLocaleString()+(old&&old!==np?' ('+(d>0?'+':'')+d.toLocaleString()+')':''));
+  toast('¥'+np.toLocaleString()+(old&&old!==np?' ('+(d>0?'+':'')+d.toLocaleString()+')':''));
   if(p.target>0&&np<=p.target*1.05){
     setTimeout(function(){
-      toast('\u5e95\u5024\u8fd1\u304f\u3067\u3059\uff01\ud83c\udf89');
-      sendNotif('\u5e95\u5024\u30a2\u30e9\u30fc\u30c8','\u300c'+p.name.substring(0,20)+'\u300d\u304c\u5e95\u5024\u8fd1\u304f\u3067\u3059\uff01');
+      toast('底値近くです！🎉');
+      sendNotif('底値アラート','「'+p.name.substring(0,20)+'」が底値近くです！');
     },600);
   }
 }
