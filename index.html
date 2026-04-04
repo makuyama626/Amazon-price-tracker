@@ -320,21 +320,30 @@ function setPrice(id){
 
 function checkPrice(id){
   var p=prods.find(function(x){return x.id===id;});
-  if(!p||!p.ph[0].price){toast('先に価格を設定してください');return;}
-  var hint=p.ph[0].price;
-  var np=Math.round(hint*(0.85+Math.random()*0.3));
-  p.ph.unshift({price:np,date:new Date().toISOString()});
-  if(np<(p.lowestEver||np)) p.lowestEver=np;
-  if(p.ph.length>30) p.ph=p.ph.slice(0,30);
-  save();render();
-  var d=np-hint;
-  toast('&#165;'+np.toLocaleString()+' ('+(d>0?'+':'')+d.toLocaleString()+')');
-  if(p.target>0&&np<=p.target*1.05){
-    setTimeout(function(){
-      toast('底値近くです！');
-      sendNotif('底値アラート','「'+p.name.substring(0,20)+'」が底値近くです！');
-    },600);
-  }
+  if(!p){return;}
+  var asin=p.asin;
+  var prev=p.ph&&p.ph.length>0?p.ph[0].price:0;
+  if(asin) window.open('https://www.amazon.co.jp/dp/'+asin,'_blank');
+  setTimeout(function(){
+    var input=prompt('Amazonページの現在価格を入力（¥）'+(prev?'\n\n前回: ¥'+prev.toLocaleString():''),prev||'');
+    if(input===null) return;
+    var np=parseFloat(String(input).replace(/[^0-9.]/g,''));
+    if(isNaN(np)||np<=0){toast('正しい価格を入力してください');return;}
+    var old=p.ph&&p.ph.length>0?p.ph[0].price:np;
+    p.ph=p.ph||[];
+    p.ph.unshift({price:np,date:new Date().toISOString()});
+    if(np<(p.lowestEver||np)) p.lowestEver=np;
+    if(p.ph.length>30) p.ph=p.ph.slice(0,30);
+    save();render();
+    var d=np-old;
+    toast('¥'+np.toLocaleString()+(old&&old!==np?' ('+(d>0?'+':'')+d.toLocaleString()+')':''));
+    if(p.target>0&&np<=p.target*1.05){
+      setTimeout(function(){
+        toast('底値近くです！🎉');
+        sendNotif('底値アラート','「'+p.name.substring(0,20)+'」が底値近くです！');
+      },600);
+    }
+  },500);
 }
 
 function getStatus(p){
