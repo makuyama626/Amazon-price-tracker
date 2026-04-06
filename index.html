@@ -81,8 +81,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--sf
 </div>
 <div class="tabs">
   <button class="tab on" onclick="showTab('t',0)">監視中</button>
-  <button class="tab" onclick="showTab('h',1)">履歴から追加</button>
-  <button class="tab" onclick="showTab('a',2)">手動追加</button>
+    <button class="tab" onclick="showTab('a',1)">手動追加</button>
 </div>
 <div id="pt">
   <a href="https://amzn.to/4sqmqec" onclick="window.open('https://amzn.to/4sqmqec','_blank');return false;" style="display:flex;align-items:center;gap:10px;background:var(--sf);border:.5px solid var(--bd2);border-radius:10px;padding:10px 14px;margin-bottom:12px;text-decoration:none;color:var(--tx)">
@@ -101,17 +100,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--sf
   <div class="st">監視リスト</div>
   <div id="pl"></div>
 </div>
-<div id="ph" style="display:none">
-  <div id="na"></div>
-  <div class="st">定期購入品（実績価格データ付き）</div>
-  <div class="fls">
-    <button class="fl on" onclick="filterH('all',this)">すべて</button>
-    <button class="fl" onclick="filterH('monthly',this)">月1回以上</button>
-    <button class="fl" onclick="filterH('bi',this)">2〜3ヶ月</button>
-    <button class="fl" onclick="filterH('half',this)">半年以内</button>
-  </div>
-  <div id="hl"></div>
-</div>
+
 <div id="pa" style="display:none">
   <div class="card">
     <div class="st" style="margin-bottom:12px">AmazonのURLから追加</div>
@@ -134,8 +123,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--sf
 </div>
 <div class="bnav">
   <div class="bi on" id="b0" onclick="showTab('t',0)"><svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg><span>監視</span></div>
-  <div class="bi" id="b1" onclick="showTab('h',1)"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg><span>履歴</span></div>
-  <div class="bi" id="b2" onclick="showTab('a',2)"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg><span>追加</span></div>
+    <div class="bi" id="b1" onclick="showTab('a',1)"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg><span>追加</span></div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
@@ -179,14 +167,6 @@ window.addEventListener('DOMContentLoaded',function(){
 });
 
 function save(){localStorage.setItem(KEY,JSON.stringify(prods));}
-function hideItem(asin){
-  window._hidden=window._hidden||new Set();
-  window._hidden.add(asin);
-  localStorage.setItem(KEY+'_h',JSON.stringify([...window._hidden]));
-  renderH();
-  toast('非表示にしました');
-}
-
 function toast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
@@ -195,11 +175,10 @@ function toast(msg){
 
 function showTab(name,idx){
   document.getElementById('pt').style.display=name==='t'?'':'none';
-  document.getElementById('ph').style.display=name==='h'?'':'none';
   document.getElementById('pa').style.display=name==='a'?'':'none';
   var tabs=document.querySelectorAll('.tab');
   for(var i=0;i<tabs.length;i++) tabs[i].className='tab'+(i===idx?' on':'');
-  for(var i=0;i<3;i++) document.getElementById('b'+i).className='bi'+(i===idx?' on':'');
+  for(var i=0;i<2;i++) document.getElementById('b'+i).className='bi'+(i===idx?' on':'');
 }
 
 function toggleNotif(){
@@ -225,59 +204,42 @@ function sendNotif(title,body){
   });
 }
 
-function filterH(f,btn){
-  hf=f;
-  var fls=document.querySelectorAll('.fl');
-  for(var i=0;i<fls.length;i++) fls[i].className='fl';
-  btn.className='fl on';
-  renderH();
+function save(){localStorage.setItem(KEY,JSON.stringify(prods));}
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);
 }
 
-function renderH(){
-  var na=document.getElementById('na');
-  if(!('Notification' in window)){
-    na.innerHTML='';
-  } else if(Notification.permission==='denied'){
-    na.innerHTML='<div class="nb"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><div class="nb-t"><b>通知がブロックされています</b>設定→Safari→通知から許可してください</div></div>';
-  } else if(!notifOn){
-    na.innerHTML='<div class="nb"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><div class="nb-t"><b>プッシュ通知を有効にする</b>右上のベルをタップして許可</div></div>';
-  } else {
-    na.innerHTML='<div class="nb"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><div class="nb-t"><b>通知 <span style="background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:20px;font-size:11px">オン</span></b>底値近くになったら通知します</div></div>';
-  }
+function showTab(name,idx){
+  document.getElementById('pt').style.display=name==='t'?'':'none';
+  document.getElementById('pa').style.display=name==='a'?'':'none';
+  var tabs=document.querySelectorAll('.tab');
+  for(var i=0;i<tabs.length;i++) tabs[i].className='tab'+(i===idx?' on':'');
+  for(var i=0;i<2;i++) document.getElementById('b'+i).className='bi'+(i===idx?' on':'');
+}
 
-  var tracked={};
-  for(var i=0;i<prods.length;i++) tracked[prods[i].asin]=true;
+function toggleNotif(){
+  if(!('Notification' in window)){toast('このブラウザは通知未対応');return;}
+  if(Notification.permission==='denied'){toast('設定→Safari→通知から許可してください');return;}
+  if(notifOn){notifOn=false;updateBell();toast('通知をオフにしました');renderH();return;}
+  Notification.requestPermission().then(function(p){
+    notifOn=p==='granted';updateBell();
+    toast(notifOn?'通知をオンにしました':'通知の許可が必要です');
+    renderH();
+  });
+}
 
-  var items=[];
-  var seen={};
-  for(var i=0;i<DATA.length;i++){
-    if(!seen[DATA[i].asin]&&!(window._hidden||new Set()).has(DATA[i].asin)){seen[DATA[i].asin]=true;items.push(DATA[i]);}
-  }
-  if(hf==='monthly') items=items.filter(function(x){return x.gap<=35;});
-  else if(hf==='bi') items=items.filter(function(x){return x.gap>35&&x.gap<=90;});
-  else if(hf==='half') items=items.filter(function(x){return x.gap>90;});
-  items.sort(function(a,b){return a.gap-b.gap;});
+function updateBell(){
+  var b=document.getElementById('bell');
+  if(b) b.className='bell'+(notifOn?' on':'');
+}
 
-  var hl=document.getElementById('hl');
-  if(!items.length){hl.innerHTML='<div class="emp">該当なし</div>';return;}
-
-  var html='';
-  for(var i=0;i<items.length;i++){
-    var item=items[i];
-    var t=tracked[item.asin];
-    var gc=item.gap<=35?'ba':item.gap<=90?'bw':'bg';
-    var gl=item.gap<=35?'月1回以上':item.gap<=90?'2〜3ヶ月':'半年以内';
-    var priceInfo='';
-    if(item.minPrice>0){
-      priceInfo='<div class="price-hint">過去購入最安値 ¥'+item.minPrice.toLocaleString()+'</div>';
-    }
-    var btn=t
-      ? '<span style="color:#2E7D32;font-size:12px;font-weight:600">&#10003; 監視中</span>'
-      : '<button class="btn bto" style="font-size:12px;padding:6px 12px" onclick="addH('+i+')">+ 追加</button>';
-    html+='<div class="card" style="position:relative">'+'<button data-asin="'+item.asin+'" onclick="hideItem(this.dataset.asin)" style="position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;background:var(--sf3);border:.5px solid var(--bd);cursor:pointer;font-size:15px;color:var(--tx2);line-height:1">&times;</button>'+'<div class="cn" style="padding-right:32px">'+item.name+'</div>'+priceInfo+'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:8px"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="bdg '+gc+'">'+gl+'</span><span class="bdg bn">約'+item.gap+'日ごと</span><span class="bdg bn">'+item.count+'回購入</span></div>'+btn+'</div></div>';
-  }
-  hl.innerHTML=html;
-  window._filteredItems=items;
+function sendNotif(title,body){
+  if(!notifOn) return;
+  navigator.serviceWorker&&navigator.serviceWorker.ready.then(function(r){
+    r.showNotification(title,{body:body,icon:'./icon-192.png',tag:'price-alert',renotify:true});
+  });
 }
 
 function addH(idx){
@@ -555,7 +517,7 @@ function render(){
   var list=document.getElementById('pl');
   var sumEl=document.getElementById('sum');
   if(!prods.length){
-    list.innerHTML='<div class="emp">&#128230;<br><br>「履歴から追加」タブで<br>定期購入品を追加しましょう</div>';
+    list.innerHTML='<div class="emp">&#128230;<br><br>「手動追加」タブで<br>商品を追加しましょう</div>';
     sumEl.style.display='none';return;
   }
   sumEl.style.display='grid';
