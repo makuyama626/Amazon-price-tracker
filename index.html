@@ -60,8 +60,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--sf
 .fl{font-size:12px;padding:5px 12px;border-radius:20px;border:.5px solid var(--bd);background:none;cursor:pointer;color:var(--tx2);font-weight:500}
 .fl.on{background:#FF9900;color:#fff;border-color:#FF9900}
 .st{font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
-.pg{height:4px;background:var(--sf3);border-radius:2px;overflow:hidden;margin-bottom:8px}
-.pgf{height:100%;border-radius:2px;transition:width .4s}
 .sb{background:#FF9900;color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
 .mt{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
 .nb{background:var(--sf);border:.5px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
@@ -96,7 +94,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--sf
   <div id="sum" class="sum" style="display:none">
     <div class="sc"><div class="sv" id="st">0</div><div class="sl">監視中</div></div>
     <div class="sc"><div class="sv" id="sal" style="color:#FF9900">0</div><div class="sl">底値近く</div></div>
-    <div class="sc"><div class="sv" id="ssv" style="font-size:14px">&#165;0</div><div class="sl">節約可能額</div></div>
+    
   </div>
   <div class="st">監視リスト</div>
   <div id="pl"></div>
@@ -143,30 +141,30 @@ var KEY='amzn_v2';
 // 購入履歴481件から算出した実績価格データ
 // minPrice=過去最安値, avgPrice=平均購入価格, suggestTarget=推奨底値目安(平均の88%)
 var DATA=[
-  {asin:'B0019GXU4M',name:'デルモンテ 食塩無添加トマトジュース 900g×12',count:13,gap:27,minPrice:3218,avgPrice:3218,suggestTarget:2832},
-  {asin:'B01MSSW5SI',name:'DHC 醗酵黒セサミン スタミナ 30日分',count:14,gap:46,minPrice:1174,avgPrice:1174,suggestTarget:1033},
-  {asin:'B007KFMAHY',name:'アサヒ ミンティア ドライハード 50粒×10個',count:2,gap:45,minPrice:1030,avgPrice:1030,suggestTarget:906},
-  {asin:'B0B5CBKZ25',name:'by Amazon 炭酸水 レモン 500ml×24本',count:2,gap:42,minPrice:1332,avgPrice:1332,suggestTarget:1172},
-  {asin:'B01FDKXSIW',name:'グミサプリ 鉄 葉酸 60粒 30日分',count:3,gap:29,minPrice:1111,avgPrice:1110,suggestTarget:977},
-  {asin:'B0DTV3N7V9',name:'福咲新堂 特選だし 完全無添加 あご入り 200g',count:4,gap:58,minPrice:1990,avgPrice:1990,suggestTarget:1751},
-  {asin:'B00KPRNWSA',name:'高千穂漢方 発芽はとむぎ茶 業務用 88P',count:9,gap:72,minPrice:1064,avgPrice:1064,suggestTarget:936},
-  {asin:'B07G736ZRK',name:'Bragg アップルサイダービネガー 946ml',count:2,gap:77,minPrice:1749,avgPrice:1749,suggestTarget:1539},
-  {asin:'B01FDLEHAY',name:'グミサプリ ルテイン 60粒 30日分',count:4,gap:84,minPrice:1601,avgPrice:1610,suggestTarget:1417},
-  {asin:'B079Y6SGJ4',name:'ザバス ホエイプロテイン100 リッチショコラ 980g',count:2,gap:92,minPrice:4161,avgPrice:4161,suggestTarget:3662},
-  {asin:'B07B66RX3L',name:'GUM 歯周プロケア ソフトピック 30本×4個',count:3,gap:97,minPrice:1246,avgPrice:1246,suggestTarget:1096},
-  {asin:'B07CS34XKQ',name:'カウブランド 無添加メイク落とし ミルク×3',count:2,gap:117,minPrice:1368,avgPrice:1368,suggestTarget:1204},
-  {asin:'B07B3BXZ43',name:'ムカデハンター 2個入り',count:5,gap:118,minPrice:502,avgPrice:502,suggestTarget:442},
-  {asin:'B0778X3QZ1',name:'リーチ ウルトラクリーンフロス 27m',count:4,gap:118,minPrice:446,avgPrice:446,suggestTarget:392},
-  {asin:'B01B74CAB4',name:'ディアナチュラ ビタミンC 120粒 60日分',count:7,gap:129,minPrice:354,avgPrice:354,suggestTarget:312},
-  {asin:'B088RN1K1Q',name:'ディアナチュラ 亜鉛 90粒 90日分',count:3,gap:138,minPrice:700,avgPrice:1405,suggestTarget:1236},
-  {asin:'B07ZGV1BKD',name:'めぐりズム ホットアイマスク ラベンダー 16枚',count:2,gap:142,minPrice:3241,avgPrice:3241,suggestTarget:2852},
-  {asin:'B00KXU3FI6',name:'UCC 職人の珈琲 ドリップ 120杯',count:2,gap:177,minPrice:3731,avgPrice:3731,suggestTarget:3283},
-  {asin:'B07N1RNJMY',name:'カゴメ トマトジュース 食塩無添加 1L×6本',count:2,gap:10,minPrice:1899,avgPrice:1899,suggestTarget:1671},
-  {asin:'B091ZK7XH3',name:'Neutrogena ノルウェーフォーミュラ ボディミルク 450ml',count:3,gap:120,minPrice:1112,avgPrice:1112,suggestTarget:979},
-  {asin:'B09TWB4CNZ',name:'NEC用 互換トナーカートリッジ 4色セット',count:2,gap:150,minPrice:10820,avgPrice:10820,suggestTarget:9522},
-  {asin:'B0BVBKQ68F',name:'訳あり ほしいも 900g 茨城産 無添加',count:2,gap:71,minPrice:1980,avgPrice:1980,suggestTarget:1742},
-  {asin:'B00K0FGEJ6',name:'高儀 EARTH MAN バンドソー用 替ブレード',count:3,gap:174,minPrice:1553,avgPrice:2840,suggestTarget:2499},
-  {asin:'B07HB1Z4GQ',name:'サンペレグリノ 炭酸水 500ml×24本',count:2,gap:120,minPrice:1658,avgPrice:1658,suggestTarget:1459}
+  {asin:'B0019GXU4M',name:'デルモンテ 食塩無添加トマトジュース 900g×12',count:13,gap:27,minPrice:3218,avgPrice:3218},
+  {asin:'B01MSSW5SI',name:'DHC 醗酵黒セサミン スタミナ 30日分',count:14,gap:46,minPrice:1174,avgPrice:1174},
+  {asin:'B007KFMAHY',name:'アサヒ ミンティア ドライハード 50粒×10個',count:2,gap:45,minPrice:1030,avgPrice:1030},
+  {asin:'B0B5CBKZ25',name:'by Amazon 炭酸水 レモン 500ml×24本',count:2,gap:42,minPrice:1332,avgPrice:1332},
+  {asin:'B01FDKXSIW',name:'グミサプリ 鉄 葉酸 60粒 30日分',count:3,gap:29,minPrice:1111,avgPrice:1110},
+  {asin:'B0DTV3N7V9',name:'福咲新堂 特選だし 完全無添加 あご入り 200g',count:4,gap:58,minPrice:1990,avgPrice:1990},
+  {asin:'B00KPRNWSA',name:'高千穂漢方 発芽はとむぎ茶 業務用 88P',count:9,gap:72,minPrice:1064,avgPrice:1064},
+  {asin:'B07G736ZRK',name:'Bragg アップルサイダービネガー 946ml',count:2,gap:77,minPrice:1749,avgPrice:1749},
+  {asin:'B01FDLEHAY',name:'グミサプリ ルテイン 60粒 30日分',count:4,gap:84,minPrice:1601,avgPrice:1610},
+  {asin:'B079Y6SGJ4',name:'ザバス ホエイプロテイン100 リッチショコラ 980g',count:2,gap:92,minPrice:4161,avgPrice:4161},
+  {asin:'B07B66RX3L',name:'GUM 歯周プロケア ソフトピック 30本×4個',count:3,gap:97,minPrice:1246,avgPrice:1246},
+  {asin:'B07CS34XKQ',name:'カウブランド 無添加メイク落とし ミルク×3',count:2,gap:117,minPrice:1368,avgPrice:1368},
+  {asin:'B07B3BXZ43',name:'ムカデハンター 2個入り',count:5,gap:118,minPrice:502,avgPrice:502},
+  {asin:'B0778X3QZ1',name:'リーチ ウルトラクリーンフロス 27m',count:4,gap:118,minPrice:446,avgPrice:446},
+  {asin:'B01B74CAB4',name:'ディアナチュラ ビタミンC 120粒 60日分',count:7,gap:129,minPrice:354,avgPrice:354},
+  {asin:'B088RN1K1Q',name:'ディアナチュラ 亜鉛 90粒 90日分',count:3,gap:138,minPrice:700,avgPrice:1405},
+  {asin:'B07ZGV1BKD',name:'めぐりズム ホットアイマスク ラベンダー 16枚',count:2,gap:142,minPrice:3241,avgPrice:3241},
+  {asin:'B00KXU3FI6',name:'UCC 職人の珈琲 ドリップ 120杯',count:2,gap:177,minPrice:3731,avgPrice:3731},
+  {asin:'B07N1RNJMY',name:'カゴメ トマトジュース 食塩無添加 1L×6本',count:2,gap:10,minPrice:1899,avgPrice:1899},
+  {asin:'B091ZK7XH3',name:'Neutrogena ノルウェーフォーミュラ ボディミルク 450ml',count:3,gap:120,minPrice:1112,avgPrice:1112},
+  {asin:'B09TWB4CNZ',name:'NEC用 互換トナーカートリッジ 4色セット',count:2,gap:150,minPrice:10820,avgPrice:10820},
+  {asin:'B0BVBKQ68F',name:'訳あり ほしいも 900g 茨城産 無添加',count:2,gap:71,minPrice:1980,avgPrice:1980},
+  {asin:'B00K0FGEJ6',name:'高儀 EARTH MAN バンドソー用 替ブレード',count:3,gap:174,minPrice:1553,avgPrice:2840},
+  {asin:'B07HB1Z4GQ',name:'サンペレグリノ 炭酸水 500ml×24本',count:2,gap:120,minPrice:1658,avgPrice:1658}
 ];
 var prods=[],hf='all',notifOn=false;
 
@@ -285,23 +283,8 @@ function addH(idx){
   if(!items||!items[idx]) return;
   var item=items[idx];
   for(var i=0;i<prods.length;i++){if(prods[i].asin===item.asin){toast('すでに監視中');return;}}
-  // 推奨底値目安を初期値として設定
-  var suggestTarget=item.suggestTarget||0;
-  prods.unshift({
-    id:Date.now(),name:item.name,asin:item.asin,
-    ph:[{price:item.avgPrice||0,date:new Date().toISOString()}],
-    target:suggestTarget,
-    lowestEver:item.minPrice||0,
-    gap:item.gap,
-    minPrice:item.minPrice||0,
-    avgPrice:item.avgPrice||0
-  });
-  save();render();renderH();showTab('t',0);
-  if(suggestTarget>0){
-    toast('追加しました。底値目安 &#165;'+suggestTarget.toLocaleString()+' を自動設定');
-  } else {
-    toast('追加しました。価格・底値を設定してください');
-  }
+  prods.unshift({id:Date.now(),name:item.name,asin:item.asin,ph:[{price:0,date:new Date().toISOString()}],gap:item.gap,minPrice:item.minPrice||0,minPriceDate:item.minPrice?new Date().toISOString():null});
+  save();render();showTab('t',0);toast('追加しました');
 }
 
 function analyzeScreenshot(input){
@@ -393,7 +376,7 @@ function addM(){
   var a=document.getElementById('ia').value.trim();
   if(!n){toast('商品名を入力してください');return;}
   if(!p||p<=0){toast('価格を入力してください');return;}
-  prods.unshift({id:Date.now(),name:n,asin:a,ph:[{price:p,date:new Date().toISOString()}],target:p,lowestEver:p,minPrice:p,minPriceDate:new Date().toISOString()});
+  prods.unshift({id:Date.now(),name:n,asin:a,ph:[{price:p,date:new Date().toISOString()}],lowestEver:p,minPrice:p,minPriceDate:new Date().toISOString()});
   save();render();
   document.getElementById('iu').value='';
   document.getElementById('in').value='';
@@ -413,15 +396,7 @@ function del(id){
 function setPrice(id){
   var p=prods.find(function(x){return x.id===id;});
   if(!p) return;
-  var defPrice=p.ph[0].price||p.avgPrice||'';
-  var defTarget=p.target||p.suggestTarget||Math.round((p.avgPrice||0)*0.88)||'';
-  var price=parseFloat(prompt('現在の価格を入力（&#165;）\n\n参考：平均購入価格 &#165;'+(p.avgPrice||0).toLocaleString(),defPrice));
-  if(isNaN(price)||price<=0) return;
-  var target=parseFloat(prompt('底値目安を入力（&#165;）\n\n参考：過去最安値 &#165;'+(p.minPrice||0).toLocaleString()+'\n推奨目安 &#165;'+(p.target||Math.round(price*0.88)).toLocaleString(),defTarget));
-  if(isNaN(target)||target<=0) return;
-  p.ph[0]={price:price,date:new Date().toISOString()};
-  p.target=target;p.lowestEver=Math.min(p.lowestEver||price,price,p.minPrice||price);
-  save();render();toast('設定しました');
+  showPriceInput(id,p.ph&&p.ph.length>0?p.ph[0].price:0);
 }
 
 function showMinPriceInput(id){
@@ -521,8 +496,6 @@ function _submitMinPrice(id){
   if(!p) return;
   p.minPrice=np;
   p.lowestEver=np;
-  // 底値目安も更新（入力最安値が現在の目安より低ければ更新）
-  if(!p.target||np<p.target) p.target=np;
   // 日付設定
   if(dateVal){
     p.minPriceDate=new Date(dateVal).toISOString();
@@ -628,17 +601,15 @@ function _submitPrice(id){
   if(prevMin===0||np<prevMin){
     p.minPrice=np;
     p.minPriceDate=now;
-    if(np<(p.target||np)) p.target=np;
     setTimeout(function(){
       toast('🎉 新記録！過去購入最安値更新 ¥'+np.toLocaleString());
       sendNotif('新記録！','「'+p.name.substring(0,20)+'」過去購入最安値更新 ¥'+np.toLocaleString());
     },300);
-  } else if(p.target>0&&np<=p.target*1.05){
-    setTimeout(function(){
-      toast('底値近くです！🎉');
-      sendNotif('底値アラート','「'+p.name.substring(0,20)+'」底値近くです！');
-    },600);
-  }
+  } else var _mn2=p.minPrice||0;
+    if(_mn2>0&&np<=_mn2*1.05){setTimeout(function(){
+      toast('最安値近くです！🎉');
+      sendNotif('最安値アラート','「'+p.name.substring(0,20)+'」最安値近くです！');
+    },600);}
   p.lowestEver=p.minPrice||np;
   save();render();
   var d=np-old;
@@ -646,12 +617,11 @@ function _submitPrice(id){
 }
 
 function getStatus(p){
-  if(!p.target||!p.ph[0].price) return {label:'価格未設定',cls:'bn',al:false};
-  var r=p.ph[0].price/p.target;
-  if(r<=1) return {label:'底値！',cls:'ba',al:true};
-  if(r<=1.05) return {label:'底値近く',cls:'ba',al:true};
-  if(r<=1.15) return {label:'要チェック',cls:'bw',al:false};
-  return {label:'通常価格',cls:'bg',al:false};
+  if(!p.ph||!p.ph[0]||!p.ph[0].price) return {label:'価格未設定',cls:'bn',al:false};
+  var cur=p.ph[0].price; var mn=p.minPrice||0;
+  if(mn>0&&cur<=mn) return {label:'最安値！',cls:'ba',al:true};
+  if(mn>0&&cur<=mn*1.05) return {label:'最安値近く',cls:'ba',al:true};
+  return {label:'監視中',cls:'bg',al:false};
 }
 
 function fmtDate(iso){
@@ -663,23 +633,18 @@ function render(){
   var list=document.getElementById('pl');
   var sumEl=document.getElementById('sum');
   if(!prods.length){
-    list.innerHTML='<div class="emp">&#128230;<br><br>「履歴から追加」タブで<br>定期購入品を追加しましょう</div>';
+    list.innerHTML='<div class="emp">&#128230;<br><br>「手動追加」タブで<br>商品を追加しましょう</div>';
     sumEl.style.display='none';return;
   }
   sumEl.style.display='grid';
-  var ac=0,ts=0;
-  var html='';
+  var ac=0;
+  var html2='';
   for(var i=0;i<prods.length;i++){
     var p=prods[i];
-    var cur=p.ph[0].price;
+    var cur=p.ph&&p.ph[0]?p.ph[0].price:0;
     var st=getStatus(p);
-    if(st.al){ac++;if(p.target>0&&cur>p.target){ts+=cur-p.target;}}
-    var ns=!cur||!p.target;
-    var bp=ns?0:Math.max(5,Math.min(100,Math.round((1-(cur-p.target)/(cur*0.5))*100)));
-    var bc=!cur?'#ccc':cur<=p.target?'#2E7D32':cur<=p.target*1.05?'#FF9900':'#ddd';
-    var al=p.asin?'<a href="https://www.amazon.co.jp/dp/'+p.asin+'" target="_blank" style="font-size:11px;color:#0070c9;text-decoration:none">Amazon&#8599;</a>':'';
-    var gb='';
-    // 価格根拠の表示
+    if(st.al) ac++;
+    var al=p.asin?'<a href="https://www.amazon.co.jp/dp/'+p.asin+'" target="_blank" rel="noopener" style="font-size:11px;color:#0070c9;text-decoration:none">Amazon↗</a>':'';
     var priceBase='';
     if(p.minPrice>0){
       var _md='';
@@ -687,18 +652,27 @@ function render(){
       priceBase='<div class="price-hint">過去購入最安値 ¥'+p.minPrice.toLocaleString()+_md+'</div>';
     }
     var body='';
-    if(ns){
-      var hint=''
-      body='<button class="sb" onclick="setPrice('+p.id+')">価格・底値を設定する →'+hint+'</button>';
+    if(!cur){
+      body='<button class="sb" onclick="setPrice('+p.id+')">現在価格を設定する</button>';
     } else {
-      body='<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px"><div class="pr'+(cur<=p.target?' lo':'')+'" >&#165;'+cur.toLocaleString()+'</div><div><div style="font-size:10px;color:var(--tx3)">底値目安</div><div style="font-size:13px;font-weight:600;color:var(--tx2)">&#165;'+p.target.toLocaleString()+'</div></div></div>'+priceBase+'<div class="pg"><div class="pgf" style="width:'+bp+'%;background:'+bc+'"></div></div>';
+      body='<div style="margin-bottom:8px"><div class="pr">¥'+cur.toLocaleString()+'</div></div>'+priceBase;
     }
-    html+='<div class="card'+(st.al?' al':'')+'"><button class="del" onclick="del('+p.id+')">&#10005;</button><div class="cn">'+p.name+'</div>'+body+'<div class="mt"><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="bdg '+st.cls+'">'+st.label+'</span>'+gb+al+'</div>'+(!ns?'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:var(--tx3)">'+fmtDate(p.ph[0].date)+'</span><button class="btn" style="font-size:12px;padding:5px 10px" onclick="showMinPriceInput('+p.id+')">過去最安値入力</button><button class="btn" style="font-size:12px;padding:5px 10px" onclick="checkPrice('+p.id+')">現在価格入力</button></div>':'')+'</div></div>';
+    html2+='<div class="card'+(st.al?' al':'')+'">'+
+      '<button class="del" onclick="del('+p.id+')">✕</button>'+
+      '<div class="cn">'+p.name+'</div>'+
+      body+
+      '<div class="mt">'+
+        '<div style="display:flex;gap:5px;flex-wrap:wrap"><span class="bdg '+st.cls+'">'+st.label+'</span>'+al+'</div>'+
+        (cur?'<div style="display:flex;align-items:center;gap:6px">'+
+          '<span style="font-size:11px;color:var(--tx3)">'+fmtDate(p.ph[0].date)+'</span>'+
+          '<button class="btn" style="font-size:12px;padding:5px 10px" onclick="showMinPriceInput('+p.id+')">過去最安値入力</button>'+
+          '<button class="btn" style="font-size:12px;padding:5px 10px" onclick="checkPrice('+p.id+')">現在価格入力</button>'+
+        '</div>':'')+
+      '</div></div>';
   }
-  list.innerHTML=html;
+  list.innerHTML=html2;
   document.getElementById('st').textContent=prods.length;
   document.getElementById('sal').textContent=ac;
-  document.getElementById('ssv').textContent='&#165;'+ts.toLocaleString();
 }
 </script>
 </body>
